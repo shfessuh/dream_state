@@ -33,6 +33,7 @@ function preload() {
 }
 
 function setup() {
+    console.log("setup() ran");
     createCanvas(2000, 1200);
     frameRate(30);
     pixelDensity(1);
@@ -108,6 +109,7 @@ function setupAudio() {
 }
 
 function draw() {
+    console.log("draw() running");
     if (isStarted) {
         let vol = amplitude.getLevel();  // Get the current volume level
         console.log("Volume level: " + vol);
