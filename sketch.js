@@ -54,7 +54,7 @@ function setup() {
     fft = new p5.FFT();
     fft.setInput(mic);
   
-    setupAudio();
+    //setupAudio();
 
     video1.onloadedmetadata = () => {
         console.log("Duration of test.mp4:", formatTime(video1.duration()));
