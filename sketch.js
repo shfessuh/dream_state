@@ -6,7 +6,7 @@ let videoFileName;
 let thermalStart = 15; // Time in seconds to start applying thermal effects
 let steps = 10;
 let opacStep;
-let mic, fft, amplitude, threshold = 0.17;
+let mic, fft, amplitude, threshold = 0.01;
 let threshold2 = 0.24; // Second volume threshold for extending live input
 let isStarted = false; // Flag to prevent multiple initializations
 let thermalApplied = false; // Flag to check if thermal effect is applied
