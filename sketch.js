@@ -68,13 +68,15 @@ function formatTime(seconds) {
 }
 
 function mousePressed() {
-    console.log("Mouse pressed, starting sketch");
-    if (!isStarted) {
-        initializeVideos();
-        setupAudio();
-        isStarted = true;
-    }
+  userStartAudio(); 
+  console.log("Mouse pressed, starting sketch");
+  if (!isStarted) {
+    initializeVideos();
+    setupAudio();
+    isStarted = true;
+  }
 }
+
 
 
 function initializeVideos() {
