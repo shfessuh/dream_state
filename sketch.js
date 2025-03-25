@@ -111,49 +111,57 @@ function setupAudio() {
 }
 
 function draw() {
-    console.log("draw() running");
-    if (isStarted) {
-        let vol = amplitude.getLevel();  // Get the current volume level
-        console.log("Volume level: " + vol);
+  console.log("draw() running");
+  
+  // Only proceed if the sketch has started and the microphone (amplitude) is ready
+  if (isStarted && amplitude) {
+    let vol = amplitude.getLevel();  // Get the current volume level
+    console.log("Volume level: " + vol);
 
-        // Calculate the position to center the videos
-        let xOffset = (width - w) / 2;
-        let yOffset = (height - h) / 2;
+    // Calculate the position to center the videos
+    let xOffset = (width - w) / 2;
+    let yOffset = (height - h) / 2;
 
-        // Check if currently any dream video is playing
-        let playingDreamVideo = currentVideos.some(video => dreamVideos.includes(video));
+    // Check if currently any dream video is playing
+    let playingDreamVideo = currentVideos.some(video => dreamVideos.includes(video));
 
-        // Check if the high amplitude trigger for live video should activate
-        if (vol > threshold2 && !isLive && playingDreamVideo) {
-            console.log("Triggering live feed due to high frequency sound.");
-            startLiveFeed(); // Start showing live video feed
-        }
-
-        // Manage the regular video or dream video playback
-        if (!isLive) {
-            // Trigger volume-based switching only if no dream videos are playing and the conditions are met
-            if (vol > threshold && !playingDreamVideo && (videoFileName === 'video0.mp4' || videoFileName === 'test.mp4') && thermalApplied) {
-                console.log("Switching to dream videos due to volume threshold.");
-                switchRandomDreamVideos();
-            }
-
-            currentVideos.forEach(video => {
-                video.loadPixels();
-                if (video.pixels.length > 0) {
-                    let applyThermal = thermalApplied || video.time() > thermalStart;
-                    if (applyThermal) {
-                        thermalApplied = true;
-                        applyThermalEffect(video);
-                    }
-                    video.updatePixels();
-                }
-                image(video, xOffset, yOffset, w, h); // Center the video
-            });
-        } else {
-            // If live feed is active, manage the live feed
-            manageLiveInput();
-        }
+    // Check if the high amplitude trigger for live video should activate
+    if (vol > threshold2 && !isLive && playingDreamVideo) {
+      console.log("Triggering live feed due to high frequency sound.");
+      startLiveFeed(); // Start showing live video feed
     }
+
+    // Manage the regular video or dream video playback
+    if (!isLive) {
+      // Trigger volume-based switching only if no dream videos are playing and the conditions are met
+      if (vol > threshold && !playingDreamVideo && (videoFileName === 'video0.mp4' || videoFileName === 'test.mp4') && thermalApplied) {
+        console.log("Switching to dream videos due to volume threshold.");
+        switchRandomDreamVideos();
+      }
+
+      currentVideos.forEach(video => {
+        video.loadPixels();
+        if (video.pixels.length > 0) {
+          let applyThermal = thermalApplied || video.time() > thermalStart;
+          if (applyThermal) {
+            thermalApplied = true;
+            applyThermalEffect(video);
+          }
+          video.updatePixels();
+        }
+        image(video, xOffset, yOffset, w, h); // Center the video
+      });
+    } else {
+      // If live feed is active, manage the live feed
+      manageLiveInput();
+    }
+  } else {
+    // If not started or microphone isn't ready, show a waiting message
+    background(0);
+    fill(255);
+    textSize(24);
+    text("Waiting for microphone...", 10, 30);
+  }
 }
 
 function manageLiveInput() {
