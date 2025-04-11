@@ -35,7 +35,7 @@ function preload() {
 
 function setup() {
   console.log("setup() ran");
-  createCanvas(2000, 1200);
+  createCanvas(windowWidth, windowHeight);
   frameRate(30);
   pixelDensity(1);
   opacStep = 255 / steps;
