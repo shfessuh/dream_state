@@ -6,12 +6,13 @@ let videoFileName;
 let thermalStart = 15; // Time in seconds to start applying thermal effects
 let steps = 10;
 let opacStep;
-let mic, fft, amplitude, threshold = 0.01;
+let mic, fft, amplitude;
+let threshold = 0.01;
 let threshold2 = 0.02; // Second volume threshold for extending live input
 let isStarted = false; // Flag to prevent multiple initializations
 let thermalApplied = false; // Flag to check if thermal effect is applied
 let liveTimer = 0, extendTimer = 0; // Timers for live input
-let isLive = false; // Flag: is the live webcam on?
+let isLive = false; // Flag for whether the live webcam is active
 let liveAudio;
 let w = 202;
 let h = 105;
@@ -21,14 +22,14 @@ function preload() {
   video1 = createVideo(['test.mp4']);
   video0.hide();
   video1.hide();
-  
+
   // Preload dream videos
   for (let i = 1; i <= 12; i++) {
     let dv = createVideo([`dream${i}.mp4`]);
     dv.hide();
     dreamVideos.push(dv);
   }
-  
+
   liveAudio = loadSound('live_audio.mp3');
 }
 
@@ -44,10 +45,8 @@ function setup() {
   liveVideo = createCapture(VIDEO);
   liveVideo.size(w, h);
   liveVideo.hide();
-  
-  fft = new p5.FFT();
-  fft.setInput(mic);
-  
+
+  // Initialize the microphone and related audio objects
   setupAudio();
 
   video1.onloadedmetadata = () => {
@@ -62,7 +61,7 @@ function formatTime(seconds) {
 }
 
 function mousePressed() {
-  userStartAudio(); 
+  userStartAudio();
   console.log("Mouse pressed, starting sketch");
   if (!isStarted) {
     initializeVideos();
@@ -105,28 +104,28 @@ function setupAudio() {
 function draw() {
   console.log("draw() running");
   
-  // Only proceed if the sketch has started and the microphone (amplitude) is ready
-  if (isStarted && amplitude) {
-    let vol = amplitude.getLevel();  // Get the current volume level
+  // If the sketch has started, display videos regardless of amplitude availability.
+  if (isStarted) {
+    // If amplitude exists, get the current volume; otherwise, default to 0.
+    let vol = amplitude ? amplitude.getLevel() : 0;
     console.log("Volume level: " + vol);
 
-    // Calculate position to center the video on canvas
+    // Calculate the position to center the video
     let xOffset = (width - w) / 2;
     let yOffset = (height - h) / 2;
 
     // Check if any dream video is currently playing
     let playingDreamVideo = currentVideos.some(video => dreamVideos.includes(video));
-    
-    // If a high amplitude sound is detected and a dream video is playing, trigger the live webcam feed
+
+    // Trigger live webcam feed if a high volume is detected and a dream video is active
     if (vol > threshold2 && !isLive && playingDreamVideo) {
       console.log("Triggering live feed due to high frequency sound.");
-      startLiveFeed(); // Start showing live webcam feed
+      startLiveFeed();
     }
 
-    // Regular video/dream video playback
+    // Regular playback: either show the videos or (if live) manage the live webcam input
     if (!isLive) {
-      // Switch to dream videos if the volume threshold is met, no dream video is playing, and thermal effect is active
-      if (vol > threshold && !playingDreamVideo && 
+      if (vol > threshold && !playingDreamVideo &&
           (videoFileName === 'video0.mp4' || videoFileName === 'test.mp4') && thermalApplied) {
         console.log("Switching to dream videos due to volume threshold.");
         switchRandomDreamVideos();
@@ -142,14 +141,14 @@ function draw() {
           }
           video.updatePixels();
         }
-        image(video, xOffset, yOffset, w, h); // Draw the video centered
+        image(video, xOffset, yOffset, w, h);
       });
     } else {
-      // Live webcam feed management
+      // When the live feed is active, manage and display the live webcam feed
       manageLiveInput();
     }
   } else {
-    // If not started or microphone isn't ready, show a waiting message
+    // If not started (waiting for the mouse click), display a waiting message.
     background(0);
     fill(255);
     textSize(24);
@@ -158,36 +157,35 @@ function draw() {
 }
 
 function manageLiveInput() {
-  showLiveVideo();  // Display the live webcam with thermal effect
-  // End live feed after 30 seconds
+  showLiveVideo();
+  // End the live feed after 30 seconds
   let currentDuration = millis() - liveTimer;
-  if (currentDuration > 30000) {  // After 30 seconds
-    endLiveFeed();  // Switch back to test.mp4
+  if (currentDuration > 30000) {  // 30 seconds
+    endLiveFeed();
   }
 }
 
 function showLiveVideo() {
-  liveVideo.loadPixels();  // Load pixel data
-  applyThermalEffect(liveVideo); // Apply thermal effect
-  liveVideo.updatePixels(); 
+  liveVideo.loadPixels();
+  applyThermalEffect(liveVideo);
+  liveVideo.updatePixels();
   let xOffset = (width - liveVideo.width) / 2;
   let yOffset = (height - liveVideo.height) / 2;
   image(liveVideo, xOffset, yOffset, liveVideo.width, liveVideo.height);
 }
 
 function startLiveFeed() {
-  stopAllVideos(); // Stop all other videos
-  
+  stopAllVideos(); // Stop other video sources
   liveTimer = millis();
   isLive = true;
   liveVideo.play();
-  liveAudio.play();  // Play live audio if required
+  liveAudio.play();  // Start playing live audio if needed
 }
 
 function endLiveFeed() {
   isLive = false;
   liveAudio.stop();  // Stop the live audio
-  switchToTest(); // Switch back to test video
+  switchToTest(); // Return to test.mp4
 }
 
 function applyThermalEffect(video) {
@@ -222,9 +220,9 @@ function applyThermalEffect(video) {
 }
 
 function switchRandomDreamVideos() {
-  stopAllVideos(); // Stop current videos
-  let numVideos = Math.floor(Math.random() * 2) + 1; // Randomly select 1 or 2 videos
-  videoQueue = []; // Clear queue
+  stopAllVideos();
+  let numVideos = Math.floor(Math.random() * 2) + 1; // Randomly choose 1 or 2 videos
+  videoQueue = [];
   let indices = getRandomIndices(dreamVideos.length, numVideos);
   indices.forEach(index => {
     let selectedVideo = dreamVideos[index];
@@ -257,8 +255,7 @@ function switchToTest() {
   stopAllVideos();
   currentVideos = [video1];
   videoFileName = 'test.mp4';
-  
-  // Set a random start time within the test video duration
+  // Set a random start time within test.mp4's duration
   let randomTime = random(video1.duration());
   video1.time(randomTime);
   video1.elt.onseeked = () => {
@@ -275,3 +272,4 @@ function stopAllVideos() {
   });
   liveVideo.stop();
 }
+
