@@ -139,7 +139,7 @@ function draw() {
           // Determine if thermal effect should apply.
           let applyThermal = thermalApplied || video.time() > thermalStart;
           if (applyThermal) {
-            thermalApplied = false;
+            thermalApplied = true;
             // Uncomment the next line to apply the thermal effect.
             applyThermalEffect(video);
           }
@@ -179,9 +179,10 @@ function manageLiveInput() {
 }
 
 function showLiveVideo() {
-  liveVideo.loadPixels();
-  applyThermalEffect(liveVideo);
-  liveVideo.updatePixels();
+  //liveVideo.loadPixels();
+  //applyThermalEffect(liveVideo);
+ // liveVideo.updatePixels();
+  image(video, xOffset, yOffset, w, h);
   let xOffset = (width - liveVideo.width) / 2;
   let yOffset = (height - liveVideo.height) / 2;
   image(liveVideo, xOffset, yOffset, liveVideo.width, liveVideo.height);
