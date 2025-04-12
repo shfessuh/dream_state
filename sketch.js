@@ -139,7 +139,7 @@ function draw() {
           // Determine if thermal effect should apply.
           let applyThermal = thermalApplied || video.time() > thermalStart;
           if (applyThermal) {
-            thermalApplied = true;
+            thermalApplied = false;
             // Uncomment the next line to apply the thermal effect.
             applyThermalEffect(video);
           }
